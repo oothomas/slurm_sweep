@@ -227,10 +227,6 @@ Aggregate:
 ```bash
 python cogaps_aggregate_results.py \
   --outdir results_cogaps_singleprocess_hpc \
-  --k-grid 7,9,11,13 \
-  --seeds 1,2,3,4,5 \
-  --iters 2000,10000,20000 \
-  --top-genes 50 \
   --preprocessed-h5ad results_cogaps_singleprocess_hpc/cache/preprocessed_cells_hvg3000.h5ad \
   --no-umap
 ```
@@ -240,4 +236,3 @@ python cogaps_aggregate_results.py \
 ## Notes on version cleanup
 
 This repo now keeps **one canonical version** of each pipeline stage script and sbatch launcher, with version-suffixed historical duplicates removed.
-
