@@ -143,6 +143,8 @@ This runs `cogaps_aggregate_results.py` and generates:
 - figures under `results_cogaps_singleprocess_hpc/figures/`
 - selected model under `results_cogaps_singleprocess_hpc/chosen_model/`
 
+Aggregation arguments `--k-grid`, `--seeds`, and `--iters` are used as **coverage checks** (warnings if expected combinations are missing from metrics), while scoring/selection always uses discovered run metrics. `--top-genes` controls how many genes are written into the final report for the chosen run.
+
 ---
 
 ## Typical customization points
@@ -227,6 +229,10 @@ Aggregate:
 ```bash
 python cogaps_aggregate_results.py \
   --outdir results_cogaps_singleprocess_hpc \
+  --k-grid 7,9,11,13 \
+  --seeds 1,2,3,4,5 \
+  --iters 2000,10000,20000 \
+  --top-genes 50 \
   --preprocessed-h5ad results_cogaps_singleprocess_hpc/cache/preprocessed_cells_hvg3000.h5ad \
   --no-umap
 ```

@@ -39,6 +39,12 @@ import matplotlib.pyplot as plt
 import scanpy as sc
 
 
+def parse_int_list(s: Optional[str]) -> Optional[List[int]]:
+    if s is None:
+        return None
+    return [int(x.strip()) for x in s.split(",") if x.strip()]
+
+
 def now_stamp() -> str:
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -239,6 +245,10 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Aggregate sweep outputs from Slurm array (single-process CoGAPS runs).")
     ap.add_argument("--outdir", required=True)
     ap.add_argument("--preprocessed-h5ad", default=None, help="Optional: preprocessed_cells.h5ad for plots.")
+    ap.add_argument("--k-grid", default=None, help="Optional comma-separated K values expected in metrics (e.g. 7,9,11,13).")
+    ap.add_argument("--seeds", default=None, help="Optional comma-separated seed values expected in metrics.")
+    ap.add_argument("--iters", default=None, help="Optional comma-separated n_iter values expected in metrics.")
+    ap.add_argument("--top-genes", type=int, default=30, help="Number of IFN top genes to report for the chosen run.")
     ap.add_argument("--jaccard-target", type=float, default=0.55)
     ap.add_argument("--max-corr-std", type=float, default=0.10)
     ap.add_argument("--umap-neighbors", type=int, default=15)
@@ -278,10 +288,32 @@ def main() -> None:
             "metrics_path": m.get("metrics_path"),
         })
 
+    expected_k = parse_int_list(args.k_grid)
+    expected_seeds = parse_int_list(args.seeds)
+    expected_iters = parse_int_list(args.iters)
+
     per_run_df = pd.DataFrame(rows).sort_values(["K", "n_iter", "seed"])
     per_run_csv = outdir / "per_run_metrics.csv"
     per_run_df.to_csv(per_run_csv, index=False)
     logger.info(f"[OUT] Wrote {per_run_csv}")
+
+    if expected_k is not None:
+        found_k = set(per_run_df["K"].dropna().astype(int).tolist())
+        missing_k = sorted(set(expected_k) - found_k)
+        if missing_k:
+            logger.warning(f"[CHECK] Missing expected K values in metrics: {missing_k}")
+
+    if expected_seeds is not None:
+        found_seeds = set(per_run_df["seed"].dropna().astype(int).tolist())
+        missing_seeds = sorted(set(expected_seeds) - found_seeds)
+        if missing_seeds:
+            logger.warning(f"[CHECK] Missing expected seeds in metrics: {missing_seeds}")
+
+    if expected_iters is not None:
+        found_iters = set(per_run_df["n_iter"].dropna().astype(int).tolist())
+        missing_iters = sorted(set(expected_iters) - found_iters)
+        if missing_iters:
+            logger.warning(f"[CHECK] Missing expected n_iter values in metrics: {missing_iters}")
 
     summary_rows = []
     for (K, n_iter), g in per_run_df.groupby(["K", "n_iter"], dropna=True):
@@ -357,7 +389,7 @@ def main() -> None:
         chosen_ifn_genes = (
             A[ifn_pat]
             .sort_values(ascending=False)
-            .head(30)
+            .head(int(args.top_genes))
             .index.astype(str)
             .tolist()
         )

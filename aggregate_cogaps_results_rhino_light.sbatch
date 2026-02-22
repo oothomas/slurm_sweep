@@ -39,10 +39,17 @@ export NUMEXPR_NUM_THREADS="$NTHREADS"
 cd "${SLURM_SUBMIT_DIR:-$HOME/CS4/slurm_sweep}"
 
 OUTDIR="results_cogaps_singleprocess_hpc"
+K_GRID="7,9,11,13"
+SEEDS="1,2,3,4,5"
+ITERS="2000,10000,20000"
 PREPROCESSED="${OUTDIR}/cache/preprocessed_cells_hvg3000.h5ad"
 
 python cogaps_aggregate_results.py \
   --outdir "${OUTDIR}" \
+  --k-grid "${K_GRID}" \
+  --seeds "${SEEDS}" \
+  --iters "${ITERS}" \
+  --top-genes 50 \
   --preprocessed-h5ad "${PREPROCESSED}" \
   --no-umap
 
