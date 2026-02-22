@@ -8,7 +8,7 @@
 #SBATCH --error=slurm-%j.err
 
 # Typical usage after the array job is submitted:
-#   sbatch --dependency=afterok:<ARRAY_JOB_ID> aggregate_cogaps_results_rhino_light_v2.sbatch
+#   sbatch --dependency=afterok:<ARRAY_JOB_ID> aggregate_cogaps_results_rhino_light.sbatch
 
 set -euo pipefail
 

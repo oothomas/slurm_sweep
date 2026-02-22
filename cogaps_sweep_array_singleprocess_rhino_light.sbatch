@@ -10,7 +10,7 @@
 # Submit as an array with a concurrency cap, e.g.:
 #   OUTDIR=results_cogaps_singleprocess_hpc
 #   N=$(wc -l < ${OUTDIR}/jobs.tsv)
-#   sbatch --array=0-$((N-1))%15 cogaps_sweep_array_singleprocess_rhino_light_v4.sbatch
+#   sbatch --array=0-$((N-1))%15 cogaps_sweep_array_singleprocess_rhino_light.sbatch
 
 set -euo pipefail
 
