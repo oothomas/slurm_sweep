@@ -143,6 +143,8 @@ This runs `cogaps_aggregate_results.py` and generates:
 - figures under `results_cogaps_singleprocess_hpc/figures/`
 - selected model under `results_cogaps_singleprocess_hpc/chosen_model/`
 
+Aggregation arguments `--k-grid`, `--seeds`, and `--iters` are used as **coverage checks** (warnings if expected combinations are missing from metrics), while scoring/selection always uses discovered run metrics. `--top-genes` controls how many genes are written into the final report for the chosen run.
+
 ---
 
 ## Typical customization points
@@ -240,4 +242,3 @@ python cogaps_aggregate_results.py \
 ## Notes on version cleanup
 
 This repo now keeps **one canonical version** of each pipeline stage script and sbatch launcher, with version-suffixed historical duplicates removed.
-
