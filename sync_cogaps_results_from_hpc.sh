@@ -16,7 +16,7 @@ set -euo pipefail
 
 HOST="rhino03"
 USER_NAME="${USER:-}"
-REMOTE_DIR="/home/${USER_NAME}/CS4/slurm_sweep/results_cogaps_singleprocess_hpc"
+REMOTE_DIR=""
 LOCAL_DIR="./results_cogaps_singleprocess_hpc"
 SSH_OPTS=""
 DRY_RUN=0
@@ -71,6 +71,11 @@ done
 if [[ -z "${USER_NAME}" ]]; then
   echo "ERROR: username is empty. Pass --user <username> or set USER." >&2
   exit 2
+fi
+
+# Resolve default remote path *after* parsing args so --user updates it.
+if [[ -z "${REMOTE_DIR}" ]]; then
+  REMOTE_DIR="/home/${USER_NAME}/CS4/slurm_sweep/results_cogaps_singleprocess_hpc"
 fi
 
 mkdir -p "${LOCAL_DIR}"
