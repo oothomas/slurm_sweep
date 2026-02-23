@@ -148,6 +148,49 @@ This runs `cogaps_aggregate_results.py` and generates:
 
 Aggregation arguments `--k-grid`, `--seeds`, and `--iters` are used as **coverage checks** (warnings if expected combinations are missing from metrics), while scoring/selection always uses discovered run metrics. `--top-genes` controls how many genes are written into the final report for the chosen run.
 
+### Run aggregation before all array tasks are finished (interim aggregation)
+
+Yes, you can aggregate while a few sweep runs are still pending. The aggregator reads whatever
+`runs/*.metrics.json` files currently exist and computes summaries from completed runs.
+Expected grid arguments are used for warnings only, so missing combinations do not block output.
+
+Use this when you want an early look at model stability/selection before the final rerun.
+
+1. **Confirm how many metrics are complete**:
+
+```bash
+OUTDIR=results_cogaps_singleprocess_hpc
+find "${OUTDIR}/runs" -name '*.metrics.json' | wc -l
+```
+
+2. **Run aggregation immediately (no Slurm dependency)**:
+
+```bash
+OUTDIR=results_cogaps_singleprocess_hpc
+python cogaps_aggregate_results.py \
+  --outdir "${OUTDIR}" \
+  --k-grid 7,9,11,13 \
+  --seeds 1,2,3,4,5 \
+  --iters 2000,10000,20000 \
+  --top-genes 50 \
+  --preprocessed-h5ad "${OUTDIR}/cache/preprocessed_cells_hvg3000.h5ad" \
+  --no-umap
+```
+
+3. **Review outputs**:
+   - `results_cogaps_singleprocess_hpc/per_run_metrics.csv`
+   - `results_cogaps_singleprocess_hpc/summary_by_K.csv`
+   - `results_cogaps_singleprocess_hpc/report.md`
+   - `results_cogaps_singleprocess_hpc/chosen_model/`
+
+4. **Interpretation note**:
+   - The selected model reflects only currently completed runs.
+   - Re-run the same aggregation command after the final array tasks finish to produce the final
+     selection/report.
+
+If you want to launch the aggregator via Slurm right away, submit
+`aggregate_cogaps_results_rhino_light.sbatch` directly (without `--dependency=afterok:...`).
+
 ---
 
 ## Typical customization points
@@ -272,4 +315,3 @@ Useful options:
 ```
 
 ---
-
