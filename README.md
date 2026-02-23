@@ -260,7 +260,6 @@ Use the helper script from your **local machine** to pull `results_cogaps_single
 ```
 
 For an in-progress sweep (e.g., 55/60 complete), just run it repeatedly; it uses resumable `rsync` flags.
-On older macOS `rsync`, the helper auto-falls back from `--append-verify` to `--append`.
 
 Useful options:
 

@@ -2,7 +2,7 @@
 # Pull CoGAPS sweep results from HPC to local machine.
 #
 # Designed for in-progress sweeps (e.g., 55/60 done): run repeatedly to sync new files.
-# Uses rsync partial/resume flags so large files can continue on retries.
+# Uses rsync with partial/resume flags so large files can continue on retries.
 #
 # Examples:
 #   ./sync_cogaps_results_from_hpc.sh
@@ -40,14 +40,7 @@ Options:
 Notes:
   - Run this from your local machine (not on rhino03).
   - Safe to re-run while jobs are still completing; rsync resumes partial files.
-  - On older rsync (e.g. macOS system rsync), the script auto-falls back from
-    --append-verify to --append.
 USAGE
-}
-
-rsync_supports_option() {
-  local opt="$1"
-  rsync --help 2>&1 | grep -F -- "${opt}" >/dev/null
 }
 
 while [[ $# -gt 0 ]]; do
@@ -86,17 +79,9 @@ RSYNC_ARGS=(
   -avh
   --progress
   --partial
+  --append-verify
   --prune-empty-dirs
 )
-
-if rsync_supports_option "--append-verify"; then
-  RSYNC_ARGS+=(--append-verify)
-elif rsync_supports_option "--append"; then
-  RSYNC_ARGS+=(--append)
-  echo "[INFO] rsync does not support --append-verify; falling back to --append."
-else
-  echo "[WARN] rsync supports neither --append-verify nor --append; continuing with --partial only."
-fi
 
 if [[ ${DRY_RUN} -eq 1 ]]; then
   RSYNC_ARGS+=(--dry-run)
