@@ -69,6 +69,11 @@ Your input AnnData should include:
 
 Run from repo root (`/workspace/slurm_sweep` or your cluster checkout path).
 
+
+> **Python version note:** Use `python3` for all commands in this repository. On some clusters,
+> `python` may resolve to Python 2, which will fail on modern syntax used by these scripts (for
+> example function annotations in `cogaps_aggregate_results.py`).
+
 ## Step A — Prep cache and jobs table
 
 Submit:
@@ -148,6 +153,49 @@ This runs `cogaps_aggregate_results.py` and generates:
 
 Aggregation arguments `--k-grid`, `--seeds`, and `--iters` are used as **coverage checks** (warnings if expected combinations are missing from metrics), while scoring/selection always uses discovered run metrics. `--top-genes` controls how many genes are written into the final report for the chosen run.
 
+### Run aggregation before all array tasks are finished (interim aggregation)
+
+Yes, you can aggregate while a few sweep runs are still pending. The aggregator reads whatever
+`runs/*.metrics.json` files currently exist and computes summaries from completed runs.
+Expected grid arguments are used for warnings only, so missing combinations do not block output.
+
+Use this when you want an early look at model stability/selection before the final rerun.
+
+1. **Confirm how many metrics are complete**:
+
+```bash
+OUTDIR=results_cogaps_singleprocess_hpc
+find "${OUTDIR}/runs" -name '*.metrics.json' | wc -l
+```
+
+2. **Run aggregation immediately (no Slurm dependency)**:
+
+```bash
+OUTDIR=results_cogaps_singleprocess_hpc
+python3 cogaps_aggregate_results.py \
+  --outdir "${OUTDIR}" \
+  --k-grid 7,9,11,13 \
+  --seeds 1,2,3,4,5 \
+  --iters 2000,10000,20000 \
+  --top-genes 50 \
+  --preprocessed-h5ad "${OUTDIR}/cache/preprocessed_cells_hvg3000.h5ad" \
+  --no-umap
+```
+
+3. **Review outputs**:
+   - `results_cogaps_singleprocess_hpc/per_run_metrics.csv`
+   - `results_cogaps_singleprocess_hpc/summary_by_K.csv`
+   - `results_cogaps_singleprocess_hpc/report.md`
+   - `results_cogaps_singleprocess_hpc/chosen_model/`
+
+4. **Interpretation note**:
+   - The selected model reflects only currently completed runs.
+   - Re-run the same aggregation command after the final array tasks finish to produce the final
+     selection/report.
+
+If you want to launch the aggregator via Slurm right away, submit
+`aggregate_cogaps_results_rhino_light.sbatch` directly (without `--dependency=afterok:...`).
+
 ---
 
 ## Typical customization points
@@ -172,7 +220,7 @@ If you change `OUTDIR`, keep it consistent across all three sbatch files.
 Inspect metric statuses:
 
 ```bash
-python - <<'PY'
+python3 - <<'PY'
 from pathlib import Path
 import json
 p = Path('results_cogaps_singleprocess_hpc/runs')
@@ -201,7 +249,7 @@ Then resubmit targeted array indices (or full array; successful runs skip).
 Prep:
 
 ```bash
-python cogaps_prep_cache.py \
+python3 cogaps_prep_cache.py \
   --raw-h5ad kang_counts_25k.h5ad \
   --outdir results_cogaps_singleprocess_hpc \
   --n-top-genes 3000
@@ -210,7 +258,7 @@ python cogaps_prep_cache.py \
 Make jobs:
 
 ```bash
-python make_cogaps_jobs_tsv.py \
+python3 make_cogaps_jobs_tsv.py \
   --k-grid 7,9,11,13 \
   --seeds 1,2,3,4,5 \
   --iters 2000,10000,20000 \
@@ -220,7 +268,7 @@ python make_cogaps_jobs_tsv.py \
 Run one job manually:
 
 ```bash
-python cogaps_run_one_singleprocess.py \
+python3 cogaps_run_one_singleprocess.py \
   --cogaps-input-h5ad results_cogaps_singleprocess_hpc/cache/cogaps_input_genesxcells_hvg3000_float64.h5ad \
   --outdir results_cogaps_singleprocess_hpc \
   --k 7 --seed 1 --n-iter 2000 \
@@ -230,7 +278,7 @@ python cogaps_run_one_singleprocess.py \
 Aggregate:
 
 ```bash
-python cogaps_aggregate_results.py \
+python3 cogaps_aggregate_results.py \
   --outdir results_cogaps_singleprocess_hpc \
   --k-grid 7,9,11,13 \
   --seeds 1,2,3,4,5 \
@@ -272,4 +320,3 @@ Useful options:
 ```
 
 ---
-

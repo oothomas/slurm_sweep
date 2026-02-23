@@ -44,7 +44,7 @@ SEEDS="1,2,3,4,5"
 ITERS="2000,10000,20000"
 PREPROCESSED="${OUTDIR}/cache/preprocessed_cells_hvg3000.h5ad"
 
-python cogaps_aggregate_results.py \
+python3 cogaps_aggregate_results.py \
   --outdir "${OUTDIR}" \
   --k-grid "${K_GRID}" \
   --seeds "${SEEDS}" \
