@@ -121,6 +121,9 @@ Each task writes:
 ### Sweep behavior details
 
 - Single-process mode is preserved by **not setting CoGAPS distributed mode**.
+- "Single-process" here means **one Python/CoGAPS process per Slurm array task**. It does **not** mean single-threaded execution inside that process.
+- `--cogaps-threads` maps to `CoGAPS(..., nThreads=...)`; in the provided Slurm script this is set to `${SLURM_CPUS_PER_TASK}` (currently `4`). So each run is one process using up to 4 threads.
+- The sweep fan-out (e.g., 60 runs) comes from the number of rows in `jobs.tsv` and array submission (`--array=0-$((N-1))%...`), so many single processes run concurrently across the cluster.
 - BLAS/OpenMP threads are set via Slurm `cpus-per-task` and passed through env vars.
 - Cache skip logic only skips when previous metrics have `status == "ok"`; failed runs are retried on rerun.
 - IFN pattern scoring can use `cogaps_input.var['condition']`, with fallback to cached preprocessed cells if needed.
@@ -242,3 +245,31 @@ python cogaps_aggregate_results.py \
 ## Notes on version cleanup
 
 This repo now keeps **one canonical version** of each pipeline stage script and sbatch launcher, with version-suffixed historical duplicates removed.
+
+
+## Copy results from HPC to local (while sweep is still running)
+
+Use the helper script from your **local machine** to pull `results_cogaps_singleprocess_hpc` from Rhino:
+
+```bash
+./sync_cogaps_results_from_hpc.sh \
+  --host rhino03 \
+  --user othomas \
+  --remote-dir /home/othomas/CS4/slurm_sweep/results_cogaps_singleprocess_hpc \
+  --local-dir ./results_cogaps_singleprocess_hpc
+```
+
+For an in-progress sweep (e.g., 55/60 complete), just run it repeatedly; it uses resumable `rsync` flags.
+
+Useful options:
+
+```bash
+# Preview only
+./sync_cogaps_results_from_hpc.sh --dry-run --user othomas
+
+# If SSH needs custom options (port/key)
+./sync_cogaps_results_from_hpc.sh --user othomas --ssh-opts "-p 22 -i ~/.ssh/id_ed25519"
+```
+
+---
+
