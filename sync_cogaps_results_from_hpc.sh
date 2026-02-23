@@ -84,9 +84,16 @@ RSYNC_ARGS=(
   -avh
   --progress
   --partial
-  --append-verify
   --prune-empty-dirs
 )
+
+# macOS/BSD rsync (2.6.9) does not support --append-verify.
+# Prefer --append-verify when available; otherwise fall back to --append.
+if rsync --help 2>&1 | grep -q -- '--append-verify'; then
+  RSYNC_ARGS+=(--append-verify)
+else
+  RSYNC_ARGS+=(--append)
+fi
 
 if [[ ${DRY_RUN} -eq 1 ]]; then
   RSYNC_ARGS+=(--dry-run)
