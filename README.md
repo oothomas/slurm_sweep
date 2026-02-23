@@ -69,6 +69,11 @@ Your input AnnData should include:
 
 Run from repo root (`/workspace/slurm_sweep` or your cluster checkout path).
 
+
+> **Python version note:** Use `python3` for all commands in this repository. On some clusters,
+> `python` may resolve to Python 2, which will fail on modern syntax used by these scripts (for
+> example function annotations in `cogaps_aggregate_results.py`).
+
 ## Step A — Prep cache and jobs table
 
 Submit:
@@ -167,7 +172,7 @@ find "${OUTDIR}/runs" -name '*.metrics.json' | wc -l
 
 ```bash
 OUTDIR=results_cogaps_singleprocess_hpc
-python cogaps_aggregate_results.py \
+python3 cogaps_aggregate_results.py \
   --outdir "${OUTDIR}" \
   --k-grid 7,9,11,13 \
   --seeds 1,2,3,4,5 \
@@ -215,7 +220,7 @@ If you change `OUTDIR`, keep it consistent across all three sbatch files.
 Inspect metric statuses:
 
 ```bash
-python - <<'PY'
+python3 - <<'PY'
 from pathlib import Path
 import json
 p = Path('results_cogaps_singleprocess_hpc/runs')
@@ -244,7 +249,7 @@ Then resubmit targeted array indices (or full array; successful runs skip).
 Prep:
 
 ```bash
-python cogaps_prep_cache.py \
+python3 cogaps_prep_cache.py \
   --raw-h5ad kang_counts_25k.h5ad \
   --outdir results_cogaps_singleprocess_hpc \
   --n-top-genes 3000
@@ -253,7 +258,7 @@ python cogaps_prep_cache.py \
 Make jobs:
 
 ```bash
-python make_cogaps_jobs_tsv.py \
+python3 make_cogaps_jobs_tsv.py \
   --k-grid 7,9,11,13 \
   --seeds 1,2,3,4,5 \
   --iters 2000,10000,20000 \
@@ -263,7 +268,7 @@ python make_cogaps_jobs_tsv.py \
 Run one job manually:
 
 ```bash
-python cogaps_run_one_singleprocess.py \
+python3 cogaps_run_one_singleprocess.py \
   --cogaps-input-h5ad results_cogaps_singleprocess_hpc/cache/cogaps_input_genesxcells_hvg3000_float64.h5ad \
   --outdir results_cogaps_singleprocess_hpc \
   --k 7 --seed 1 --n-iter 2000 \
@@ -273,7 +278,7 @@ python cogaps_run_one_singleprocess.py \
 Aggregate:
 
 ```bash
-python cogaps_aggregate_results.py \
+python3 cogaps_aggregate_results.py \
   --outdir results_cogaps_singleprocess_hpc \
   --k-grid 7,9,11,13 \
   --seeds 1,2,3,4,5 \

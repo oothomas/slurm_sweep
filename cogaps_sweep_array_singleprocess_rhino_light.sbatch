@@ -73,7 +73,7 @@ echo "Running job: K=${K} seed=${SEED} n_iter=${NITER}"
 echo "Cache: ${COGAPS_INPUT}"
 echo "Outdir: ${OUTDIR}"
 
-python cogaps_run_one_singleprocess.py \
+python3 cogaps_run_one_singleprocess.py \
   --cogaps-input-h5ad "${COGAPS_INPUT}" \
   --outdir "${OUTDIR}" \
   --k "${K}" \

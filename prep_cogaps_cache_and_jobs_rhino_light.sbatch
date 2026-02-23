@@ -52,7 +52,7 @@ ITERS="2000,10000,20000"
 # -----------------------------------------------------------------------------
 # 1) Preprocess once -> write cache files
 # -----------------------------------------------------------------------------
-python cogaps_prep_cache.py \
+python3 cogaps_prep_cache.py \
   --input-h5ad "${H5AD}" \
   --outdir "${OUTDIR}" \
   --min-cells 3 \
@@ -64,7 +64,7 @@ python cogaps_prep_cache.py \
 # 2) Build jobs.tsv (NO header). Each line = one (K, seed, n_iter) run.
 #    NOTE: make_cogaps_jobs_tsv.py expects --out (path), not --outdir.
 # -----------------------------------------------------------------------------
-python make_cogaps_jobs_tsv.py \
+python3 make_cogaps_jobs_tsv.py \
   --k-grid "${K_GRID}" \
   --seeds "${SEEDS}" \
   --iters "${ITERS}" \
